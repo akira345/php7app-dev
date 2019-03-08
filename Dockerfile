@@ -52,8 +52,7 @@ RUN mkdir -p /var/www/adminer \
 RUN mkdir -p /var/www/memcached \
   && cd /var/www/memcached \
   && wget https://raw.githubusercontent.com/DBezemer/memcachephp/master/memcache.php \
-  && sed -e "s/localhost/${MEMCACHED_HOST}/g" ./memcache.php > ./index.php \
-  && rm memcache.php
+  && mv ./memcache.php ./index.php 
 
 # setting apache virtualhost
 COPY virtual.conf /etc/apache2/sites-available/
@@ -83,6 +82,6 @@ WORKDIR /var/www/web
 VOLUME /var/www/web
 
 # Setting Document Root and start apache
-COPY set_document_root.sh /tmp
-ENTRYPOINT ["/tmp/set_document_root.sh"]
+COPY endpoint_script.sh /tmp
+ENTRYPOINT ["/tmp/endpoint_script.sh"]
 CMD [ "apache2-foreground" ]
