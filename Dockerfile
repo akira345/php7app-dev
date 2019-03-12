@@ -30,7 +30,7 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
         && docker-php-ext-configure \
         gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ \
         && docker-php-ext-install -j$(nproc) \
-        mbstring zip gd xml pdo pdo_pgsql pdo_mysql soap intl opcache \
+        mbstring zip gd xml pdo pdo_pgsql pdo_mysql soap intl opcache pgsql mysqli \
         && rm -r /var/lib/apt/lists/*
 
 # install php pecl extentions
@@ -40,6 +40,22 @@ RUN pecl channel-update pecl.php.net \
 
 # copy from custom php.ini file
 COPY php.ini /usr/local/etc/php/
+
+# Install Python3.5 and more...
+RUN apt-get update \
+  && apt-get install --no-install-recommends -y python3
+RUN cd /usr/bin \
+  && ln -s idle3 idle \
+  && ln -s pydoc3 pydoc \
+  && ln -s python3 python \
+  && ln -s python3-config python-config
+
+ENV PYTHON_PIP_VERSION 19.0.3
+
+RUN wget -O get-pip.py 'https://bootstrap.pypa.io/get-pip.py' \
+  && python get-pip.py --disable-pip-version-check --no-cache-dir "pip==$PYTHON_PIP_VERSION" \
+  && rm -f get-pip.py
+RUN pip install boto3
 
 # install adminer
 RUN mkdir -p /var/www/adminer \
