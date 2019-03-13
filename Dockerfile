@@ -41,22 +41,6 @@ RUN pecl channel-update pecl.php.net \
 # copy from custom php.ini file
 COPY php.ini /usr/local/etc/php/
 
-# Install Python3.5 and more...
-RUN apt-get update \
-  && apt-get install --no-install-recommends -y python3
-RUN cd /usr/bin \
-  && ln -s idle3 idle \
-  && ln -s pydoc3 pydoc \
-  && ln -s python3 python \
-  && ln -s python3-config python-config
-
-ENV PYTHON_PIP_VERSION 19.0.3
-
-RUN wget -O get-pip.py 'https://bootstrap.pypa.io/get-pip.py' \
-  && python get-pip.py --disable-pip-version-check --no-cache-dir "pip==$PYTHON_PIP_VERSION" \
-  && rm -f get-pip.py
-RUN pip install boto3
-
 # install adminer
 RUN mkdir -p /var/www/adminer \
   && cd /var/www/adminer \
