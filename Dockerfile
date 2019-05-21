@@ -82,6 +82,6 @@ WORKDIR /var/www/web
 VOLUME /var/www/web
 
 # Setting Document Root and start apache
-COPY endpoint_script.sh /tmp
+COPY --chown=root:root endpoint_script.sh /tmp
 ENTRYPOINT ["/tmp/endpoint_script.sh"]
 CMD [ "apache2-foreground" ]
