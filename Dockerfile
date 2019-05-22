@@ -83,5 +83,6 @@ VOLUME /var/www/web
 
 # Setting Document Root and start apache
 COPY --chown=root:root endpoint_script.sh /tmp
+RUN chmod +x /tmp/endpoint_script.sh
 ENTRYPOINT ["/tmp/endpoint_script.sh"]
 CMD [ "apache2-foreground" ]
