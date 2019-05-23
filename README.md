@@ -20,6 +20,7 @@ This container develops PHP 7 web application in the Japanese locale and time.
 	* memcachephp into /memcached  
 	(ID:memcache PW:password)
 	* Includes Larabel installer and composer. If you use, ```docker exec -it ...```
+	* Installed MySQL/MariaDB and PostgreSQL11 Clients.
 	* enable opcache.
 
 * Commandline example.
