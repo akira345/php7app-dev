@@ -26,7 +26,7 @@ RUN apt-get update && apt-get install --no-install-recommends -y wget gnupg gnup
 # install php middleware
 RUN apt-get update && apt-get install --no-install-recommends -y \
         git curl unzip vim wget sudo libfreetype6-dev libjpeg62-turbo-dev libmcrypt-dev libmcrypt-dev libzip-dev \
-        libxml2-dev libpq-dev libpq5 mysql-client ssl-cert libicu-dev libmemcached-dev libgmp3-dev \
+        libxml2-dev libpq-dev libpq5 mariadb-client ssl-cert libicu-dev libmemcached-dev libgmp3-dev \
         && docker-php-ext-configure \
         gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ \
         && docker-php-ext-install -j$(nproc) \
