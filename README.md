@@ -16,11 +16,11 @@ This container develops PHP 7 web application in the Japanese locale and time.
 	* /var/www/web is Application Directroy into container.
 
 * Preinstalled applications.
-	* Adminer 4.7.1 into /adminer.
+	* Adminer 4.7.5 into /adminer.
 	* memcachephp into /memcached  
 	(ID:memcache PW:password)
 	* Includes Larabel installer and composer. If you use, ```docker exec -it ...```
-	* Installed MySQL/MariaDB and PostgreSQL11 Clients.
+	* Installed MySQL/MariaDB and PostgreSQL12 Clients.
 	* enable opcache.
 
 * Commandline example.

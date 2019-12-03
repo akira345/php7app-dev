@@ -1,13 +1,14 @@
-FROM php:7.3-apache
+FROM php:7.4-apache
 
 # Setting locale
 RUN apt-get update \
-  && apt-get install -y locales \
+  && apt-get install -y apt-utils locales \
   && rm -rf /var/lib/apt/lists/* \
   && echo "ja_JP.UTF-8 UTF-8" > /etc/locale.gen \
   && locale-gen ja_JP.UTF-8
 ENV LC_ALL ja_JP.UTF-8
 ENV TZ "Asia/Tokyo"
+ENV DEBIAN_FRONTEND noninteractive
 
 # Setting Envionment
 ENV DOCUMENT_ROOT /var/www/web/html
@@ -16,19 +17,19 @@ ENV MEMCACHED_HOST memcached_srv
 # copy from custom bashrc
 COPY .bashrc /root/
 
-# install postgresql11 client
+# install postgresql12 client
 RUN apt-get update && apt-get install --no-install-recommends -y wget gnupg gnupg2 gnupg1 \
   && wget -q https://www.postgresql.org/media/keys/ACCC4CF8.asc -O - | apt-key add - \
   && sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt/ stretch-pgdg main" >> /etc/apt/sources.list.d/pgdg.list' \
   && apt-get update \
-  && apt-get install --no-install-recommends -y postgresql-client-11
+  && apt-get install --no-install-recommends -y postgresql-client-12
 
 # install php middleware
 RUN apt-get update && apt-get install --no-install-recommends -y \
   git curl unzip vim wget sudo libfreetype6-dev libjpeg62-turbo-dev libmcrypt-dev libmcrypt-dev libzip-dev \
-  libxml2-dev libpq-dev libpq5 mariadb-client ssl-cert libicu-dev libmemcached-dev libgmp3-dev \
+  libxml2-dev libpq-dev libpq5 mariadb-client ssl-cert libicu-dev libmemcached-dev libgmp3-dev libonig-dev\
   && docker-php-ext-configure \
-  gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ \
+  gd --with-freetype --with-jpeg \
   && docker-php-ext-install -j$(nproc) \
   mbstring zip gd xml pdo pdo_pgsql pdo_mysql soap intl opcache pgsql mysqli gmp\
   && rm -r /var/lib/apt/lists/*
