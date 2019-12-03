@@ -25,18 +25,18 @@ RUN apt-get update && apt-get install --no-install-recommends -y wget gnupg gnup
 
 # install php middleware
 RUN apt-get update && apt-get install --no-install-recommends -y \
-        git curl unzip vim wget sudo libfreetype6-dev libjpeg62-turbo-dev libmcrypt-dev libmcrypt-dev libzip-dev \
-        libxml2-dev libpq-dev libpq5 mariadb-client ssl-cert libicu-dev libmemcached-dev libgmp3-dev \
-        && docker-php-ext-configure \
-        gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ \
-        && docker-php-ext-install -j$(nproc) \
-        mbstring zip gd xml pdo pdo_pgsql pdo_mysql soap intl opcache pgsql mysqli gmp\
-        && rm -r /var/lib/apt/lists/*
+  git curl unzip vim wget sudo libfreetype6-dev libjpeg62-turbo-dev libmcrypt-dev libmcrypt-dev libzip-dev \
+  libxml2-dev libpq-dev libpq5 mariadb-client ssl-cert libicu-dev libmemcached-dev libgmp3-dev \
+  && docker-php-ext-configure \
+  gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ \
+  && docker-php-ext-install -j$(nproc) \
+  mbstring zip gd xml pdo pdo_pgsql pdo_mysql soap intl opcache pgsql mysqli gmp\
+  && rm -r /var/lib/apt/lists/*
 
 # install php pecl extentions
 RUN pecl channel-update pecl.php.net \
-       && pecl install memcached \
-       && docker-php-ext-enable memcached
+  && pecl install memcached \
+  && docker-php-ext-enable memcached
 
 # copy from custom php.ini file
 COPY php.ini /usr/local/etc/php/
@@ -44,9 +44,9 @@ COPY php.ini /usr/local/etc/php/
 # install adminer
 RUN mkdir -p /var/www/adminer \
   && cd /var/www/adminer \
-  && wget https://www.adminer.org/static/download/4.7.1/adminer-4.7.1.php \
+  && wget https://www.adminer.org/static/download/4.7.5/adminer-4.7.5.php \
   && wget https://raw.githubusercontent.com/vrana/adminer/master/designs/nicu/adminer.css \
-  && mv adminer-4.7.1.php index.php
+  && mv adminer-4.7.5.php index.php
 
 # install memached monitor
 RUN mkdir -p /var/www/memcached \
@@ -68,15 +68,15 @@ RUN chown -R www-data: /var/www
 
 # install composer and settings
 RUN curl -sS https://getcomposer.org/installer | php -- \
-        --filename=composer \
-        --install-dir=/usr/local/bin
+  --filename=composer \
+  --install-dir=/usr/local/bin
 
 USER www-data
 RUN composer global require --optimize-autoloader \
-        "hirak/prestissimo"
+  "hirak/prestissimo"
 # install laravel installer
 RUN composer global require --optimize-autoloader \
-         "laravel/installer"
+  "laravel/installer"
 USER root
 WORKDIR /var/www/web
 VOLUME /var/www/web
