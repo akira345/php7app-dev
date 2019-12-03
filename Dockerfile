@@ -57,7 +57,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   libpcap-dev \
   && rm -rf /var/lib/apt/lists/*
 ENV GPG_KEY 0D96DF4D4110E5C43FBFB17F2D347EA6AA65421D
-ENV PYTHON_VERSION 3.7.3
+ENV PYTHON_VERSION 3.7.5
 
 RUN set -ex \
   \
@@ -77,18 +77,54 @@ RUN set -ex \
   && ./configure \
   --build="$gnuArch" \
   --enable-loadable-sqlite-extensions \
+  --enable-optimizations \
   --enable-shared \
   --with-system-expat \
   --with-system-ffi \
   --without-ensurepip \
-  --enable-optimizations \
   && make -j "$(nproc)" \
+  # setting PROFILE_TASK makes "--enable-optimizations" reasonable: https://bugs.python.org/issue36044 / https://github.com/docker-library/python/issues/160#issuecomment-509426916
+  PROFILE_TASK='-m test.regrtest --pgo \
+  test_array \
+  test_base64 \
+  test_binascii \
+  test_binhex \
+  test_binop \
+  test_bytes \
+  test_c_locale_coercion \
+  test_class \
+  test_cmath \
+  test_codecs \
+  test_compile \
+  test_complex \
+  test_csv \
+  test_decimal \
+  test_dict \
+  test_float \
+  test_fstring \
+  test_hashlib \
+  test_io \
+  test_iter \
+  test_json \
+  test_long \
+  test_math \
+  test_memoryview \
+  test_pickle \
+  test_re \
+  test_set \
+  test_slice \
+  test_struct \
+  test_threading \
+  test_time \
+  test_traceback \
+  test_unicode \
+  ' \
   && make install \
   && ldconfig \
   \
   && find /usr/local -depth \
   \( \
-  \( -type d -a \( -name test -o -name tests \) \) \
+  \( -type d -a \( -name test -o -name tests -o -name idle_test \) \) \
   -o \
   \( -type f -a \( -name '*.pyc' -o -name '*.pyo' \) \) \
   \) -exec rm -rf '{}' + \
@@ -104,7 +140,7 @@ RUN cd /usr/local/bin \
   && ln -s python3-config python-config
 
 # if this is called "PIP_VERSION", pip explodes with "ValueError: invalid truth value '<VERSION>'"
-ENV PYTHON_PIP_VERSION 19.1.1
+ENV PYTHON_PIP_VERSION 19.3.1
 
 RUN set -ex; \
   \
