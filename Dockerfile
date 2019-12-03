@@ -51,7 +51,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   libncurses5-dev \
   libsqlite3-dev \
   libreadline-dev \
-  libtk8.5 \
+  libtk8.6 \
   libgdm-dev \
   libdb4o-cil-dev \
   libpcap-dev \
