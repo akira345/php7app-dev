@@ -149,7 +149,7 @@ RUN mkdir -p /var/log/httpd/php7.localdomain \
   && ln -s /dev/stderr /var/log/httpd/php7.localdomain/error_log \
   && a2enmod rewrite \
   && a2dissite 000-default \
-  && a2ensite virtual \
+#  && a2ensite virtual \
   && service apache2 restart
 RUN chown -R www-data: /var/www
 
@@ -170,6 +170,8 @@ VOLUME /var/www/web
 
 # Setting Document Root and start apache
 COPY --chown=root:root endpoint_script.sh /tmp
+COPY --chown=root:root generate_certs.sh /tmp
 RUN chmod +x /tmp/endpoint_script.sh
+RUN chmod +x /tmp/generate_certs.sh
 ENTRYPOINT ["/tmp/endpoint_script.sh"]
 CMD [ "apache2-foreground" ]
