@@ -17,6 +17,9 @@ ENV MEMCACHED_HOST memcached_srv
 ENV ADMINER_VERSION 4.7.5
 ENV NODE_VERSION 12.14.1
 ENV YARN_VERSION 1.21.1
+ENV PYTHON_PIP_VERSION 19.3.1
+ENV GPG_KEY 0D96DF4D4110E5C43FBFB17F2D347EA6AA65421D
+ENV PYTHON_VERSION 3.7.5
 
 # copy from custom bashrc
 COPY .bashrc /root/
@@ -61,8 +64,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   libdb4o-cil-dev \
   libpcap-dev \
   && rm -rf /var/lib/apt/lists/*
-ENV GPG_KEY 0D96DF4D4110E5C43FBFB17F2D347EA6AA65421D
-ENV PYTHON_VERSION 3.7.5
 
 RUN set -ex \
   \
@@ -145,8 +146,6 @@ RUN cd /usr/local/bin \
   && ln -s python3-config python-config
 
 # if this is called "PIP_VERSION", pip explodes with "ValueError: invalid truth value '<VERSION>'"
-ENV PYTHON_PIP_VERSION 19.3.1
-
 RUN set -ex; \
   \
   wget -O get-pip.py 'https://bootstrap.pypa.io/get-pip.py'; \
