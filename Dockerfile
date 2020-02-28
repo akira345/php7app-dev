@@ -15,9 +15,9 @@ ENV DOCUMENT_ROOT /var/www/web/html
 ENV MEMCACHED_HOST memcached_srv
 
 # Build Environment
-ENV ADMINER_VERSION 4.7.5
-ENV NODE_VERSION 12.14.1
-ENV YARN_VERSION 1.21.1
+ENV ADMINER_VERSION 4.7.6
+ENV NODE_VERSION 12.16.1
+ENV YARN_VERSION 1.22.0
 
 # copy from custom bashrc
 COPY .bashrc /root/
