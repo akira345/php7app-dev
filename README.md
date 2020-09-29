@@ -15,12 +15,12 @@ This container develops PHP 7 web application in the Japanese locale and time.
 - MountPoints \* /var/www/web is Application Directroy into container.
 
 - Preinstalled applications.
-  _ Adminer 4.7.6 into /adminer.
+  _ Adminer 4.7.7 into /adminer.
   _ memcachephp into /memcached  
    (ID:memcache PW:password)
   _ Includes Larabel installer and composer. If you use, `docker exec -it ...`
   _ Installed MySQL/MariaDB and PostgreSQL12 Clients.
-  _ Installed nodeJS 12.16.2 and yarn 1.22.4.
+  _ Installed nodeJS 12.18.4 and yarn 1.22.5.
   _ Enable opcache. \* With self certificate by port 443.
 
 - Commandline example.
