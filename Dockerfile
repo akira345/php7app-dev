@@ -51,21 +51,35 @@ COPY php.ini /usr/local/etc/php/
 
 # Install Python3.7 and more...
 RUN apt-get update && apt-get install -y --no-install-recommends \
-  tk-dev \
-  uuid-dev \
-  dirmngr \
-  libffi-dev \
-  libssl-dev \
-  libncurses5-dev \
-  libsqlite3-dev \
-  libreadline-dev \
-  libtk8.6 \
-  libgdm-dev \
-  libdb4o-cil-dev \
-  libpcap-dev \
+  ca-certificates \
+  netbase \
   && rm -rf /var/lib/apt/lists/*
 
 RUN set -ex \
+  \
+  && savedAptMark="$(apt-mark showmanual)" \
+  && apt-get update && apt-get install -y --no-install-recommends \
+  dpkg-dev \
+  gcc \
+  libbluetooth-dev \
+  libbz2-dev \
+  libc6-dev \
+  libexpat1-dev \
+  libffi-dev \
+  libgdbm-dev \
+  liblzma-dev \
+  libncursesw5-dev \
+  libreadline-dev \
+  libsqlite3-dev \
+  libssl-dev \
+  make \
+  tk-dev \
+  uuid-dev \
+  wget \
+  xz-utils \
+  zlib1g-dev \
+  # as of Stretch, "gpg" is no longer included by default
+  $(command -v gpg > /dev/null || echo 'gnupg dirmngr') \
   \
   && wget -O python.tar.xz "https://www.python.org/ftp/python/${PYTHON_VERSION%%[a-z]*}/Python-$PYTHON_VERSION.tar.xz" \
   && wget -O python.tar.xz.asc "https://www.python.org/ftp/python/${PYTHON_VERSION%%[a-z]*}/Python-$PYTHON_VERSION.tar.xz.asc" \
@@ -84,11 +98,13 @@ RUN set -ex \
   --build="$gnuArch" \
   --enable-loadable-sqlite-extensions \
   --enable-optimizations \
+  --enable-option-checking=fatal \
   --enable-shared \
   --with-system-expat \
   --with-system-ffi \
   --without-ensurepip \
   && make -j "$(nproc)" \
+  LDFLAGS="-Wl,--strip-all" \
   # setting PROFILE_TASK makes "--enable-optimizations" reasonable: https://bugs.python.org/issue36044 / https://github.com/docker-library/python/issues/160#issuecomment-509426916
   PROFILE_TASK='-m test.regrtest --pgo \
   test_array \
@@ -126,15 +142,28 @@ RUN set -ex \
   test_unicode \
   ' \
   && make install \
-  && ldconfig \
+  && rm -rf /usr/src/python \
   \
   && find /usr/local -depth \
   \( \
   \( -type d -a \( -name test -o -name tests -o -name idle_test \) \) \
-  -o \
-  \( -type f -a \( -name '*.pyc' -o -name '*.pyo' \) \) \
+  -o \( -type f -a \( -name '*.pyc' -o -name '*.pyo' -o -name '*.a' \) \) \
+  -o \( -type f -a -name 'wininst-*.exe' \) \
   \) -exec rm -rf '{}' + \
-  && rm -rf /usr/src/python \
+  \
+  && ldconfig \
+  \
+  && apt-mark auto '.*' > /dev/null \
+  && apt-mark manual $savedAptMark \
+  && find /usr/local -type f -executable -not \( -name '*tkinter*' \) -exec ldd '{}' ';' \
+  | awk '/=>/ { print $(NF-1) }' \
+  | sort -u \
+  | xargs -r dpkg-query --search \
+  | cut -d: -f1 \
+  | sort -u \
+  | xargs -r apt-mark manual \
+  && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
+  && rm -rf /var/lib/apt/lists/* \
   \
   && python3 --version
 
@@ -146,9 +175,23 @@ RUN cd /usr/local/bin \
   && ln -s python3-config python-config
 
 # if this is called "PIP_VERSION", pip explodes with "ValueError: invalid truth value '<VERSION>'"
+# https://github.com/pypa/get-pip
+ENV PYTHON_GET_PIP_URL https://github.com/pypa/get-pip/raw/8283828b8fd6f1783daf55a765384e6d8d2c5014/get-pip.py
+ENV PYTHON_GET_PIP_SHA256 2250ab0a7e70f6fd22b955493f7f5cf1ea53e70b584a84a32573644a045b4bfb
+
 RUN set -ex; \
   \
-  wget -O get-pip.py 'https://bootstrap.pypa.io/get-pip.py'; \
+  savedAptMark="$(apt-mark showmanual)"; \
+  apt-get update; \
+  apt-get install -y --no-install-recommends wget; \
+  \
+  wget -O get-pip.py "$PYTHON_GET_PIP_URL"; \
+  echo "$PYTHON_GET_PIP_SHA256 *get-pip.py" | sha256sum --check --strict -; \
+  \
+  apt-mark auto '.*' > /dev/null; \
+  [ -z "$savedAptMark" ] || apt-mark manual $savedAptMark; \
+  apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false; \
+  rm -rf /var/lib/apt/lists/*; \
   \
   python get-pip.py \
   --disable-pip-version-check \
@@ -159,7 +202,7 @@ RUN set -ex; \
   \
   find /usr/local -depth \
   \( \
-  \( -type d -a \( -name test -o -name tests \) \) \
+  \( -type d -a \( -name test -o -name tests -o -name idle_test \) \) \
   -o \
   \( -type f -a \( -name '*.pyc' -o -name '*.pyo' \) \) \
   \) -exec rm -rf '{}' +; \
@@ -221,19 +264,20 @@ RUN ARCH= && dpkgArch="$(dpkg --print-architecture)" \
   i386) ARCH='x86';; \
   *) echo "unsupported architecture"; exit 1 ;; \
   esac \
-  # gpg keys listed at https://github.com/nodejs/node#release-keys
   && set -ex \
+  # libatomic1 for arm
+  && apt-get update && apt-get install -y ca-certificates curl wget gnupg dirmngr xz-utils libatomic1 --no-install-recommends \
+  && rm -rf /var/lib/apt/lists/* \
   && for key in \
-  94AE36675C464D64BAFA68DD7434390BDBE9B9C5 \
-  FD3A5288F042B6850C66B31F09FE44734EB7990E \
-  71DCFD284A79C3B38668286BC97EC7A07EDE3FC1 \
-  DD8F2338BAE7501E3DD5AC78C273792F7D83545D \
-  C4F0DFFF4E8C1A8236409D08E73BC641CC11F4C8 \
-  B9AE9905FFD7803F25714661B63B535A4C206CA9 \
-  77984A986EBC2AA786BC0F66B01FBB92821C587A \
-  8FCCA13FEF1D0C2E91008E09770F7A9A5AE15600 \
   4ED778F539E3634C779C87C6D7062848A1AB005C \
+  94AE36675C464D64BAFA68DD7434390BDBE9B9C5 \
+  71DCFD284A79C3B38668286BC97EC7A07EDE3FC1 \
+  8FCCA13FEF1D0C2E91008E09770F7A9A5AE15600 \
+  C4F0DFFF4E8C1A8236409D08E73BC641CC11F4C8 \
+  C82FA3AE1CBEDC6BE46B9360C43CEC45C17AB93C \
+  DD8F2338BAE7501E3DD5AC78C273792F7D83545D \
   A48C2BEE680E841632CD4E44F07496B3EB3C1762 \
+  108F52B48DB57BB0CC439B2997B01419BD92F80A \
   B9E2F5981AA6E0CD28160D9FF13993A75599653C \
   ; do \
   gpg --batch --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys "$key" || \
@@ -246,9 +290,16 @@ RUN ARCH= && dpkgArch="$(dpkg --print-architecture)" \
   && grep " node-v$NODE_VERSION-linux-$ARCH.tar.xz\$" SHASUMS256.txt | sha256sum -c - \
   && tar -xJf "node-v$NODE_VERSION-linux-$ARCH.tar.xz" -C /usr/local --strip-components=1 --no-same-owner \
   && rm "node-v$NODE_VERSION-linux-$ARCH.tar.xz" SHASUMS256.txt.asc SHASUMS256.txt \
-  && ln -s /usr/local/bin/node /usr/local/bin/nodejs
+  && ln -s /usr/local/bin/node /usr/local/bin/nodejs \
+  # smoke tests
+  && node --version \
+  && npm --version
 
+# install yarn
 RUN set -ex \
+  && savedAptMark="$(apt-mark showmanual)" \
+  && apt-get update && apt-get install -y ca-certificates curl wget gnupg dirmngr --no-install-recommends \
+  && rm -rf /var/lib/apt/lists/* \
   && for key in \
   6A010C5166006599AA17F08146C2130DFD2497F5 \
   ; do \
@@ -263,7 +314,9 @@ RUN set -ex \
   && tar -xzf yarn-v$YARN_VERSION.tar.gz -C /opt/ \
   && ln -s /opt/yarn-v$YARN_VERSION/bin/yarn /usr/local/bin/yarn \
   && ln -s /opt/yarn-v$YARN_VERSION/bin/yarnpkg /usr/local/bin/yarnpkg \
-  && rm yarn-v$YARN_VERSION.tar.gz.asc yarn-v$YARN_VERSION.tar.gz
+  && rm yarn-v$YARN_VERSION.tar.gz.asc yarn-v$YARN_VERSION.tar.gz \
+  # smoke test
+  && yarn --version
 
 # Setting Document Root and start apache
 COPY --chown=root:root endpoint_script.sh /tmp
