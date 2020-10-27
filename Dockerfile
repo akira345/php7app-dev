@@ -78,8 +78,7 @@ RUN curl -sS https://getcomposer.org/installer | php -- \
   --install-dir=/usr/local/bin
 
 USER www-data
-RUN composer global require --optimize-autoloader \
-  "hirak/prestissimo"
+
 # install laravel installer
 RUN composer global require --optimize-autoloader \
   "laravel/installer"
