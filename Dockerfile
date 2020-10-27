@@ -52,21 +52,34 @@ COPY php.ini /usr/local/etc/php/
 
 # Install Python3.8 and more...
 RUN apt-get update && apt-get install -y --no-install-recommends \
+  ca-certificates \
+  netbase \
+  && rm -rf /var/lib/apt/lists/*
+RUN set -ex \
+  \
+  && savedAptMark="$(apt-mark showmanual)" \
+  && apt-get update && apt-get install -y --no-install-recommends \
+  dpkg-dev \
+  gcc \
+  libbluetooth-dev \
+  libbz2-dev \
+  libc6-dev \
+  libexpat1-dev \
+  libffi-dev \
+  libgdbm-dev \
+  liblzma-dev \
+  libncursesw5-dev \
+  libreadline-dev \
+  libsqlite3-dev \
+  libssl-dev \
+  make \
   tk-dev \
   uuid-dev \
-  dirmngr \
-  libffi-dev \
-  libssl-dev \
-  libncurses5-dev \
-  libsqlite3-dev \
-  libreadline-dev \
-  libtk8.6 \
-  libgdm-dev \
-  libdb4o-cil-dev \
-  libpcap-dev \
-  && rm -rf /var/lib/apt/lists/*
-
-RUN set -ex \
+  wget \
+  xz-utils \
+  zlib1g-dev \
+  # as of Stretch, "gpg" is no longer included by default
+  $(command -v gpg > /dev/null || echo 'gnupg dirmngr') \
   \
   && wget -O python.tar.xz "https://www.python.org/ftp/python/${PYTHON_VERSION%%[a-z]*}/Python-$PYTHON_VERSION.tar.xz" \
   && wget -O python.tar.xz.asc "https://www.python.org/ftp/python/${PYTHON_VERSION%%[a-z]*}/Python-$PYTHON_VERSION.tar.xz.asc" \
@@ -85,21 +98,36 @@ RUN set -ex \
   --build="$gnuArch" \
   --enable-loadable-sqlite-extensions \
   --enable-optimizations \
+  --enable-option-checking=fatal \
   --enable-shared \
   --with-system-expat \
   --with-system-ffi \
   --without-ensurepip \
   && make -j "$(nproc)" \
+  LDFLAGS="-Wl,--strip-all" \
   && make install \
-  && ldconfig \
+  && rm -rf /usr/src/python \
   \
   && find /usr/local -depth \
   \( \
   \( -type d -a \( -name test -o -name tests -o -name idle_test \) \) \
-  -o \
-  \( -type f -a \( -name '*.pyc' -o -name '*.pyo' \) \) \
+  -o \( -type f -a \( -name '*.pyc' -o -name '*.pyo' -o -name '*.a' \) \) \
+  -o \( -type f -a -name 'wininst-*.exe' \) \
   \) -exec rm -rf '{}' + \
-  && rm -rf /usr/src/python \
+  \
+  && ldconfig \
+  \
+  && apt-mark auto '.*' > /dev/null \
+  && apt-mark manual $savedAptMark \
+  && find /usr/local -type f -executable -not \( -name '*tkinter*' \) -exec ldd '{}' ';' \
+  | awk '/=>/ { print $(NF-1) }' \
+  | sort -u \
+  | xargs -r dpkg-query --search \
+  | cut -d: -f1 \
+  | sort -u \
+  | xargs -r apt-mark manual \
+  && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
+  && rm -rf /var/lib/apt/lists/* \
   \
   && python3 --version
 
@@ -111,9 +139,23 @@ RUN cd /usr/local/bin \
   && ln -s python3-config python-config
 
 # if this is called "PIP_VERSION", pip explodes with "ValueError: invalid truth value '<VERSION>'"
+# https://github.com/pypa/get-pip
+ENV PYTHON_GET_PIP_URL https://github.com/pypa/get-pip/raw/8283828b8fd6f1783daf55a765384e6d8d2c5014/get-pip.py
+ENV PYTHON_GET_PIP_SHA256 2250ab0a7e70f6fd22b955493f7f5cf1ea53e70b584a84a32573644a045b4bfb
+
 RUN set -ex; \
   \
-  wget -O get-pip.py 'https://bootstrap.pypa.io/get-pip.py'; \
+  savedAptMark="$(apt-mark showmanual)"; \
+  apt-get update; \
+  apt-get install -y --no-install-recommends wget; \
+  \
+  wget -O get-pip.py "$PYTHON_GET_PIP_URL"; \
+  echo "$PYTHON_GET_PIP_SHA256 *get-pip.py" | sha256sum --check --strict -; \
+  \
+  apt-mark auto '.*' > /dev/null; \
+  [ -z "$savedAptMark" ] || apt-mark manual $savedAptMark; \
+  apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false; \
+  rm -rf /var/lib/apt/lists/*; \
   \
   python get-pip.py \
   --disable-pip-version-check \
@@ -124,7 +166,7 @@ RUN set -ex; \
   \
   find /usr/local -depth \
   \( \
-  \( -type d -a \( -name test -o -name tests \) \) \
+  \( -type d -a \( -name test -o -name tests -o -name idle_test \) \) \
   -o \
   \( -type f -a \( -name '*.pyc' -o -name '*.pyo' \) \) \
   \) -exec rm -rf '{}' +; \
