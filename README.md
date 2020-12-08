@@ -31,4 +31,6 @@ This container develops PHP 7 web application in the Japanese locale and time.
 
 - Commandline example.
 
-  `` docker run --rm -v `pwd`/app:/var/www/web -p 8080:80 -e DOCUMENT_ROOT=/var/www/web/public_html --name example akira345/php7app-dev ``
+  ```
+  docker run --rm -v `pwd`/app:/var/www/web -p 8080:80 -e DOCUMENT_ROOT=/var/www/web/public_html --name example akira345/php7app-dev
+  ```
