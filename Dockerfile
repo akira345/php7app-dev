@@ -19,6 +19,9 @@ ENV ADMINER_VERSION 4.7.8
 ENV NODE_VERSION 14.15.4
 ENV YARN_VERSION 1.22.5
 ENV PYTHON_PIP_VERSION 21.0.1
+ENV PYTHON_GET_PIP_URL https://github.com/pypa/get-pip/raw/4be3fe44ad9dedc028629ed1497052d65d281b8e/get-pip.py
+ENV PYTHON_GET_PIP_SHA256 8006625804f55e1bd99ad4214fd07082fee27a1c35945648a58f9087a714e9d4
+
 ENV GPG_KEY E3FF2839C048B25C084DEBE9B26995E310250568
 ENV PYTHON_VERSION 3.8.7
 
@@ -52,34 +55,12 @@ COPY php.ini /usr/local/etc/php/
 
 # Install Python3.8 and more...
 RUN apt-get update && apt-get install -y --no-install-recommends \
-  ca-certificates \
-  netbase \
-  && rm -rf /var/lib/apt/lists/*
-RUN set -ex \
-  \
-  && savedAptMark="$(apt-mark showmanual)" \
-  && apt-get update && apt-get install -y --no-install-recommends \
-  dpkg-dev \
-  gcc \
   libbluetooth-dev \
-  libbz2-dev \
-  libc6-dev \
-  libexpat1-dev \
-  libffi-dev \
-  libgdbm-dev \
-  liblzma-dev \
-  libncursesw5-dev \
-  libreadline-dev \
-  libsqlite3-dev \
-  libssl-dev \
-  make \
   tk-dev \
   uuid-dev \
-  wget \
-  xz-utils \
-  zlib1g-dev \
-  # as of Stretch, "gpg" is no longer included by default
-  $(command -v gpg > /dev/null || echo 'gnupg dirmngr') \
+  && rm -rf /var/lib/apt/lists/*
+
+RUN set -ex \
   \
   && wget -O python.tar.xz "https://www.python.org/ftp/python/${PYTHON_VERSION%%[a-z]*}/Python-$PYTHON_VERSION.tar.xz" \
   && wget -O python.tar.xz.asc "https://www.python.org/ftp/python/${PYTHON_VERSION%%[a-z]*}/Python-$PYTHON_VERSION.tar.xz.asc" \
@@ -104,7 +85,6 @@ RUN set -ex \
   --with-system-ffi \
   --without-ensurepip \
   && make -j "$(nproc)" \
-  LDFLAGS="-Wl,--strip-all" \
   && make install \
   && rm -rf /usr/src/python \
   \
@@ -117,18 +97,6 @@ RUN set -ex \
   \
   && ldconfig \
   \
-  && apt-mark auto '.*' > /dev/null \
-  && apt-mark manual $savedAptMark \
-  && find /usr/local -type f -executable -not \( -name '*tkinter*' \) -exec ldd '{}' ';' \
-  | awk '/=>/ { print $(NF-1) }' \
-  | sort -u \
-  | xargs -r dpkg-query --search \
-  | cut -d: -f1 \
-  | sort -u \
-  | xargs -r apt-mark manual \
-  && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
-  && rm -rf /var/lib/apt/lists/* \
-  \
   && python3 --version
 
 # make some useful symlinks that are expected to exist
@@ -140,22 +108,11 @@ RUN cd /usr/local/bin \
 
 # if this is called "PIP_VERSION", pip explodes with "ValueError: invalid truth value '<VERSION>'"
 # https://github.com/pypa/get-pip
-ENV PYTHON_GET_PIP_URL https://github.com/pypa/get-pip/raw/8283828b8fd6f1783daf55a765384e6d8d2c5014/get-pip.py
-ENV PYTHON_GET_PIP_SHA256 2250ab0a7e70f6fd22b955493f7f5cf1ea53e70b584a84a32573644a045b4bfb
 
 RUN set -ex; \
   \
-  savedAptMark="$(apt-mark showmanual)"; \
-  apt-get update; \
-  apt-get install -y --no-install-recommends wget; \
-  \
   wget -O get-pip.py "$PYTHON_GET_PIP_URL"; \
   echo "$PYTHON_GET_PIP_SHA256 *get-pip.py" | sha256sum --check --strict -; \
-  \
-  apt-mark auto '.*' > /dev/null; \
-  [ -z "$savedAptMark" ] || apt-mark manual $savedAptMark; \
-  apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false; \
-  rm -rf /var/lib/apt/lists/*; \
   \
   python get-pip.py \
   --disable-pip-version-check \
@@ -171,6 +128,7 @@ RUN set -ex; \
   \( -type f -a \( -name '*.pyc' -o -name '*.pyo' \) \) \
   \) -exec rm -rf '{}' +; \
   rm -f get-pip.py
+
 
 RUN pip install boto3
 
@@ -227,13 +185,12 @@ RUN ARCH= && dpkgArch="$(dpkg --print-architecture)" \
   i386) ARCH='x86';; \
   *) echo "unsupported architecture"; exit 1 ;; \
   esac \
+  # gpg keys listed at https://github.com/nodejs/node#release-keys
   && set -ex \
-  # libatomic1 for arm
-  && apt-get update && apt-get install -y ca-certificates curl wget gnupg dirmngr xz-utils libatomic1 --no-install-recommends \
-  && rm -rf /var/lib/apt/lists/* \
   && for key in \
   4ED778F539E3634C779C87C6D7062848A1AB005C \
   94AE36675C464D64BAFA68DD7434390BDBE9B9C5 \
+  1C050899334244A8AF75E53792EF661D867B9DFA \
   71DCFD284A79C3B38668286BC97EC7A07EDE3FC1 \
   8FCCA13FEF1D0C2E91008E09770F7A9A5AE15600 \
   C4F0DFFF4E8C1A8236409D08E73BC641CC11F4C8 \
@@ -260,9 +217,6 @@ RUN ARCH= && dpkgArch="$(dpkg --print-architecture)" \
 
 # install yarn
 RUN set -ex \
-  && savedAptMark="$(apt-mark showmanual)" \
-  && apt-get update && apt-get install -y ca-certificates curl wget gnupg dirmngr --no-install-recommends \
-  && rm -rf /var/lib/apt/lists/* \
   && for key in \
   6A010C5166006599AA17F08146C2130DFD2497F5 \
   ; do \
