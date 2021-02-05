@@ -16,7 +16,7 @@ ENV MEMCACHED_HOST memcached_srv
 
 # Build Environment
 ENV ADMINER_VERSION 4.7.8
-ENV NODE_VERSION 14.15.1
+ENV NODE_VERSION 14.15.4
 ENV YARN_VERSION 1.22.5
 
 # copy from custom bashrc
