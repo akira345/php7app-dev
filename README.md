@@ -20,12 +20,12 @@ This container develops PHP 7 web application in the Japanese locale and time.
 
 - Preinstalled applications.
 
-  - Adminer 4.7.8 into /adminer.
+  - Adminer 4.8.0 into /adminer.
   - memcachephp into /memcached  
     (ID:memcache PW:password)
   - Includes Larabel installer and composer. If you use, `docker exec -it ...`
   - Installed MySQL/MariaDB and PostgreSQL12 Clients.
-  - Installed nodeJS 14.15.4 and yarn 1.22.5.
+  - Installed nodeJS 14.16.0 and yarn 1.22.5.
   - Enable PHP opcache.
   - With self certificate by port 443.
 
