@@ -7,7 +7,7 @@ This container develops PHP 7 web application in the Japanese locale and time.
 - Environments
 
   - DOCUMENT_ROOT  
-     Sets the path of the document root in the container.(ex: /var/www/web/public_html)  
+    Sets the path of the document root in the container.(ex: /var/www/web/public_html)  
     Defailt path is /var/www/web/html
 
   - MEMCACHED_HOST
@@ -25,7 +25,7 @@ This container develops PHP 7 web application in the Japanese locale and time.
     (ID:memcache PW:password)
   - Includes Larabel installer and composer. If you use, `docker exec -it ...`
   - Installed MySQL/MariaDB and PostgreSQL12 Clients.
-  - Installed nodeJS 14.16.0 and yarn 1.22.5.
+  - Installed nodeJS 14.16.1 and yarn 1.22.5.
   - Enable PHP opcache.
   - With self certificate by port 443.
 
