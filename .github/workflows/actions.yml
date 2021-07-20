@@ -1,0 +1,69 @@
+#
+# https://qiita.com/kawakawaryuryu/items/b0291c1bc1141a535263#set-up-docker-buildx より
+#
+# セットするシークレット
+# DOCKERHUB_USERNAME: DockerHub ユーザ名
+# DOCKERHUB_PASSWORD: DockerHub パスワード
+# DOCKER_IMAGENAME: Dockerイメージ名
+#
+
+name: Build and Publish Docker
+
+on:
+  push:
+    branches:
+      - master
+      - main
+      - 7.3
+      - 7.3-with_python3.7
+      - 7.3-with_python3.8
+      - 7.3-with_python3.9
+      - 7.4
+      - 7.4-with_python3.8
+      - 7.4-with_python3.9
+      - 7.4-with_python3.10
+
+  schedule:
+    - cron: "0 0 1 * *"
+
+jobs:
+  build_and_push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Extract branch name
+        shell: bash
+        run: echo "::set-output name=branch::${GITHUB_REF#refs/heads/}"
+        id: extract_branch
+      - name: Set BranchName
+        run: echo "BRANCH_NAME=${{ steps.extract_branch.outputs.branch }}" >> $GITHUB_ENV
+
+      - name: checkout
+        uses: actions/checkout@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Login to DockerHub Container Registry
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Build and push(latest)
+        if: contains(github.ref, 'main') || contains(github.ref, 'master')
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_IMAGENAME }}:latest
+
+      - name: Build and push(release-${{ env.BRANCH_NAME }})
+        if: (!(contains(github.ref, 'main') || contains(github.ref, 'master')))
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_IMAGENAME }}:release-${{ env.BRANCH_NAME }}
