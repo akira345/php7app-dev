@@ -16,16 +16,16 @@ ENV MEMCACHED_HOST memcached_srv
 
 # Build Environment
 ENV ADMINER_VERSION 4.8.1
-ENV NODE_VERSION 14.17.1
-ENV YARN_VERSION 1.22.10
+ENV NODE_VERSION 14.17.3
+ENV YARN_VERSION 1.22.5
 
-ENV PYTHON_PIP_VERSION 21.1.2
+ENV PYTHON_PIP_VERSION 21.1.3
 # https://github.com/pypa/get-pip
-ENV PYTHON_GET_PIP_URL https://github.com/pypa/get-pip/raw/936e08ce004d0b2fae8952c50f7ccce1bc578ce5/public/get-pip.py
-ENV PYTHON_GET_PIP_SHA256 8890955d56a8262348470a76dc432825f61a84a54e2985a86cd520f656a6e220
+ENV PYTHON_GET_PIP_URL https://github.com/pypa/get-pip/raw/a1675ab6c2bd898ed82b1f58c486097f763c74a9/public/get-pip.py
+ENV PYTHON_GET_PIP_SHA256 6665659241292b2147b58922b9ffe11dda66b39d52d8a6f3aa310bc1d60ea6f7
 
 ENV GPG_KEY E3FF2839C048B25C084DEBE9B26995E310250568
-ENV PYTHON_VERSION 3.8.10
+ENV PYTHON_VERSION 3.8.11
 
 # copy from custom bashrc
 COPY .bashrc /root/
@@ -147,9 +147,6 @@ RUN cd /usr/local/bin \
 	&& ln -s python3 python \
 	&& ln -s python3-config python-config
 
-# if this is called "PIP_VERSION", pip explodes with "ValueError: invalid truth value '<VERSION>'"
-# https://github.com/pypa/get-pip
-
 RUN set -ex; \
 	\
 	savedAptMark="$(apt-mark showmanual)"; \
@@ -178,6 +175,7 @@ RUN set -ex; \
 			\( -type f -a \( -name '*.pyc' -o -name '*.pyo' \) \) \
 		\) -exec rm -rf '{}' +; \
 	rm -f get-pip.py
+
 
 RUN pip install boto3
 
@@ -251,9 +249,8 @@ RUN ARCH= && dpkgArch="$(dpkg --print-architecture)" \
       108F52B48DB57BB0CC439B2997B01419BD92F80A \
       B9E2F5981AA6E0CD28160D9FF13993A75599653C \
     ; do \
-      gpg --batch --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys "$key" || \
-      gpg --batch --keyserver hkp://ipv4.pool.sks-keyservers.net --recv-keys "$key" || \
-      gpg --batch --keyserver hkp://pgp.mit.edu:80 --recv-keys "$key" ; \
+      gpg --batch --keyserver hkps://keys.openpgp.org --recv-keys "$key" || \
+      gpg --batch --keyserver keyserver.ubuntu.com --recv-keys "$key" ; \
     done \
     && curl -fsSLO --compressed "https://nodejs.org/dist/v$NODE_VERSION/node-v$NODE_VERSION-linux-$ARCH.tar.xz" \
     && curl -fsSLO --compressed "https://nodejs.org/dist/v$NODE_VERSION/SHASUMS256.txt.asc" \
@@ -283,9 +280,8 @@ RUN set -ex \
   && for key in \
     6A010C5166006599AA17F08146C2130DFD2497F5 \
   ; do \
-    gpg --batch --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys "$key" || \
-    gpg --batch --keyserver hkp://ipv4.pool.sks-keyservers.net --recv-keys "$key" || \
-    gpg --batch --keyserver hkp://pgp.mit.edu:80 --recv-keys "$key" ; \
+    gpg --batch --keyserver hkps://keys.openpgp.org --recv-keys "$key" || \
+    gpg --batch --keyserver keyserver.ubuntu.com --recv-keys "$key" ; \
   done \
   && curl -fsSLO --compressed "https://yarnpkg.com/downloads/$YARN_VERSION/yarn-v$YARN_VERSION.tar.gz" \
   && curl -fsSLO --compressed "https://yarnpkg.com/downloads/$YARN_VERSION/yarn-v$YARN_VERSION.tar.gz.asc" \
