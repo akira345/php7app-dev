@@ -16,14 +16,14 @@ ENV MEMCACHED_HOST memcached_srv
 
 # Build Environment
 ENV ADMINER_VERSION 4.8.1
-ENV NODE_VERSION 14.17.3
+ENV NODE_VERSION 14.17.5
 ENV YARN_VERSION 1.22.5
 
 # if this is called "PIP_VERSION", pip explodes with "ValueError: invalid truth value '<VERSION>'"
-ENV PYTHON_PIP_VERSION 21.1.3
+ENV PYTHON_PIP_VERSION 21.2.4
 # https://github.com/pypa/get-pip
-ENV PYTHON_GET_PIP_URL https://github.com/pypa/get-pip/raw/a1675ab6c2bd898ed82b1f58c486097f763c74a9/public/get-pip.py
-ENV PYTHON_GET_PIP_SHA256 6665659241292b2147b58922b9ffe11dda66b39d52d8a6f3aa310bc1d60ea6f7
+ENV PYTHON_GET_PIP_URL https://github.com/pypa/get-pip/raw/c20b0cfd643cd4a19246ccf204e2997af70f6b21/public/get-pip.py
+ENV PYTHON_GET_PIP_SHA256 fa6f3fb93cce234cd4e8dd2beb54a51ab9c247653b52855a48dd44e6b21ff28b
 
 ENV GPG_KEY E3FF2839C048B25C084DEBE9B26995E310250568
 ENV PYTHON_VERSION 3.9.6
