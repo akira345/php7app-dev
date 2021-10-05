@@ -16,7 +16,7 @@ ENV MEMCACHED_HOST memcached_srv
 
 # Build Environment
 ENV ADMINER_VERSION 4.8.1
-ENV NODE_VERSION 14.17.5
+ENV NODE_VERSION 14.18.0
 ENV YARN_VERSION 1.22.5
 
 
@@ -90,7 +90,7 @@ USER root
 WORKDIR /var/www/web
 VOLUME /var/www/web
 
-# install nodeJS(based on buster-slim)
+# install nodeJS(based on bullseye-slim)
 RUN groupadd --gid 1000 node \
   && useradd --uid 1000 --gid node --shell /bin/bash --create-home node
 
