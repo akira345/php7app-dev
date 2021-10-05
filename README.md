@@ -25,7 +25,7 @@ This container develops PHP 7 web application in the Japanese locale and time.
     (ID:memcache PW:password)
   - Includes Larabel installer and composer. If you use, `docker exec -it ...`
   - Installed MySQL/MariaDB and PostgreSQL12 Clients.
-  - Installed nodeJS 14.17.5 and yarn 1.22.5.
+  - Installed nodeJS 14.18.0 and yarn 1.22.5.
   - Enable PHP opcache.
   - With self certificate by port 443.
 
