@@ -16,17 +16,20 @@ ENV MEMCACHED_HOST memcached_srv
 
 # Build Environment
 ENV ADMINER_VERSION 4.8.1
-ENV NODE_VERSION 14.17.5
+ENV NODE_VERSION 14.18.0
 ENV YARN_VERSION 1.22.5
 
 # if this is called "PIP_VERSION", pip explodes with "ValueError: invalid truth value '<VERSION>'"
 ENV PYTHON_PIP_VERSION 21.2.4
+# https://github.com/docker-library/python/issues/365
+ENV PYTHON_SETUPTOOLS_VERSION 57.5.0
 # https://github.com/pypa/get-pip
 ENV PYTHON_GET_PIP_URL https://github.com/pypa/get-pip/raw/c20b0cfd643cd4a19246ccf204e2997af70f6b21/public/get-pip.py
 ENV PYTHON_GET_PIP_SHA256 fa6f3fb93cce234cd4e8dd2beb54a51ab9c247653b52855a48dd44e6b21ff28b
 
 ENV GPG_KEY E3FF2839C048B25C084DEBE9B26995E310250568
-ENV PYTHON_VERSION 3.9.6
+ENV PYTHON_VERSION 3.9.7
+
 
 # copy from custom bashrc
 COPY .bashrc /root/
@@ -56,7 +59,7 @@ RUN pecl channel-update pecl.php.net \
 # copy from custom php.ini file
 COPY php.ini /usr/local/etc/php/
 
-# Install Python3.9 and more...(based on debian:buster-slim)
+# Install Python3.9 and more...(based on debian:bullseye-slim)
 RUN set -eux; \
 	apt-get update; \
 	apt-get install -y --no-install-recommends \
@@ -166,6 +169,7 @@ RUN set -ex; \
 		--disable-pip-version-check \
 		--no-cache-dir \
 		"pip==$PYTHON_PIP_VERSION" \
+		"setuptools==$PYTHON_SETUPTOOLS_VERSION" \
 	; \
 	pip --version; \
 	\
@@ -218,7 +222,7 @@ USER root
 WORKDIR /var/www/web
 VOLUME /var/www/web
 
-# install nodeJS(based on buster-slim)
+# install nodeJS(based on bullseye-slim)
 RUN groupadd --gid 1000 node \
   && useradd --uid 1000 --gid node --shell /bin/bash --create-home node
 
