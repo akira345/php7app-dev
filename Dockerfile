@@ -2,7 +2,7 @@ FROM php:7.4-apache
 
 # Setting locale
 RUN apt-get update \
-  && apt-get install -y apt-utils locales fonts-ipafont \
+  && apt-get install -y apt-utils locales fonts-ipafont libnss3 libx11-6 libnss3-dev libasound2-data  libasound2 xdg-utils chromium \
   && rm -rf /var/lib/apt/lists/* \
   && echo "ja_JP.UTF-8 UTF-8" > /etc/locale.gen \
   && locale-gen ja_JP.UTF-8
