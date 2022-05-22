@@ -16,7 +16,7 @@ ENV MEMCACHED_HOST memcached_srv
 
 # Build Environment
 ENV ADMINER_VERSION 4.8.1
-ENV NODE_VERSION 16.14.2
+ENV NODE_VERSION 16.15.0
 ENV YARN_VERSION 1.22.18
 
 
@@ -87,6 +87,8 @@ USER www-data
 RUN composer global require --optimize-autoloader \
   "laravel/installer"
 USER root
+ENV PATH $PATH:/var/www/.config/composer/vendor/bin/
+
 WORKDIR /var/www/web
 VOLUME /var/www/web
 
