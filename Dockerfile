@@ -16,19 +16,19 @@ ENV MEMCACHED_HOST memcached_srv
 
 # Build Environment
 ENV ADMINER_VERSION 4.8.1
-ENV NODE_VERSION 16.14.2
+ENV NODE_VERSION 16.15.0
 ENV YARN_VERSION 1.22.18
 
 # if this is called "PIP_VERSION", pip explodes with "ValueError: invalid truth value '<VERSION>'"
-ENV PYTHON_PIP_VERSION 21.2.4
+ENV PYTHON_PIP_VERSION 22.0.4
 # https://github.com/docker-library/python/issues/365
 ENV PYTHON_SETUPTOOLS_VERSION 58.1.0
 # https://github.com/pypa/get-pip
-ENV PYTHON_GET_PIP_URL https://github.com/pypa/get-pip/raw/38e54e5de07c66e875c11a1ebbdb938854625dd8/public/get-pip.py
-ENV PYTHON_GET_PIP_SHA256 e235c437e5c7d7524fbce3880ca39b917a73dc565e0c813465b7a7a329bb279a
+ENV PYTHON_GET_PIP_URL https://github.com/pypa/get-pip/raw/2d26a16e351a22108b46fa11507aa57a732d4074/public/get-pip.py
+ENV PYTHON_GET_PIP_SHA256 530e7077f9e31f0378b5ee7cc90c8d99b7aef832f3d4ea96b42c2072e322734e
 
 ENV GPG_KEY A035C8C19219BA821ECEA86B64E628F8D684696D
-ENV PYTHON_VERSION 3.10.2
+ENV PYTHON_VERSION 3.10.4
 
 # copy from custom bashrc
 COPY .bashrc /root/
@@ -116,7 +116,6 @@ RUN set -eux; \
 		--enable-shared \
 		--with-lto \
 		--with-system-expat \
-		--with-system-ffi \
 		--without-ensurepip \
 	; \
 	nproc="$(nproc)"; \
@@ -131,7 +130,7 @@ RUN set -eux; \
 	find /usr/local -depth \
 		\( \
 			\( -type d -a \( -name test -o -name tests -o -name idle_test \) \) \
-			-o \( -type f -a \( -name '*.pyc' -o -name '*.pyo' -o -name '*.a' \) \) \
+			-o \( -type f -a \( -name '*.pyc' -o -name '*.pyo' -o -name 'libpython*.a' \) \) \
 		\) -exec rm -rf '{}' + \
 	; \
 	\
@@ -158,7 +157,7 @@ RUN set -eux; \
 		dst="$(echo "$src" | tr -d 3)"; \
 		[ -s "/usr/local/bin/$src" ]; \
 		[ ! -e "/usr/local/bin/$dst" ]; \
-		ln -svT "/usr/local/bin/$src" "/usr/local/bin/$dst"; \
+		ln -svT "$src" "/usr/local/bin/$dst"; \
 	done
 
 RUN set -eux; \
@@ -226,6 +225,8 @@ USER www-data
 RUN composer global require --optimize-autoloader \
   "laravel/installer"
 USER root
+ENV PATH $PATH:/var/www/.config/composer/vendor/bin/
+
 WORKDIR /var/www/web
 VOLUME /var/www/web
 
