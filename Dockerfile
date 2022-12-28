@@ -16,27 +16,27 @@ ENV MEMCACHED_HOST memcached_srv
 
 # Build Environment
 ENV ADMINER_VERSION 4.8.1
-ENV NODE_VERSION 18.12.0
+ENV NODE_VERSION 18.12.1
 ENV YARN_VERSION 1.22.19
 
 # if this is called "PIP_VERSION", pip explodes with "ValueError: invalid truth value '<VERSION>'"
-ENV PYTHON_PIP_VERSION 22.2.2
+ENV PYTHON_PIP_VERSION 22.3.1
 # https://github.com/docker-library/python/issues/365
-ENV PYTHON_SETUPTOOLS_VERSION 63.2.0
+ENV PYTHON_SETUPTOOLS_VERSION 65.5.0
 # https://github.com/pypa/get-pip
-ENV PYTHON_GET_PIP_URL https://github.com/pypa/get-pip/raw/6d265be7a6b5bc4e9c5c07646aee0bf0394be03d/public/get-pip.py
-ENV PYTHON_GET_PIP_SHA256 36c6f6214694ef64cc70f4127ac0ccec668408a93825359d998fb31d24968d67
+ENV PYTHON_GET_PIP_URL https://github.com/pypa/get-pip/raw/66030fa03382b4914d4c4d0896961a0bdeeeb274/public/get-pip.py
+ENV PYTHON_GET_PIP_SHA256 1e501cf004eac1b7eb1f97266d28f995ae835d30250bec7f8850562703067dc6
 
 ENV GPG_KEY A035C8C19219BA821ECEA86B64E628F8D684696D
-ENV PYTHON_VERSION 3.10.8
+ENV PYTHON_VERSION 3.10.9
 
 # copy from custom bashrc
 COPY .bashrc /root/
 
 # install postgresql12 client
 RUN apt-get update && apt-get install --no-install-recommends -y wget gnupg gnupg2 gnupg1 \
-  && wget -q https://www.postgresql.org/media/keys/ACCC4CF8.asc -O - | apt-key add - \
-  && sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt/ bullseye-pgdg main" >> /etc/apt/sources.list.d/pgdg.list' \
+  && curl -LfsS https://www.postgresql.org/media/keys/ACCC4CF8.asc | gpg --dearmor -o /usr/share/keyrings/postgres-archive-keyring.gpg \
+  && sh -c 'echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/postgres-archive-keyring.gpg] http://apt.postgresql.org/pub/repos/apt/ bullseye-pgdg main" | tee /etc/apt/sources.list.d/pgdg.list' \
   && apt-get update \
   && apt-get install --no-install-recommends -y postgresql-client-12
 
@@ -251,18 +251,13 @@ RUN ARCH= && dpkgArch="$(dpkg --print-architecture)" \
     && for key in \
       4ED778F539E3634C779C87C6D7062848A1AB005C \
       141F07595B7B3FFE74309A937405533BE57C7D57 \
-      94AE36675C464D64BAFA68DD7434390BDBE9B9C5 \
       74F12602B6F1C4E913FAA37AD3A89613643B6201 \
-      71DCFD284A79C3B38668286BC97EC7A07EDE3FC1 \
       61FC681DFB92A079F1685E77973F295594EC4689 \
       8FCCA13FEF1D0C2E91008E09770F7A9A5AE15600 \
       C4F0DFFF4E8C1A8236409D08E73BC641CC11F4C8 \
       890C08DB8579162FEE0DF9DB8BEAB4DFCF555EF4 \
       C82FA3AE1CBEDC6BE46B9360C43CEC45C17AB93C \
-      DD8F2338BAE7501E3DD5AC78C273792F7D83545D \
-      A48C2BEE680E841632CD4E44F07496B3EB3C1762 \
       108F52B48DB57BB0CC439B2997B01419BD92F80A \
-      B9E2F5981AA6E0CD28160D9FF13993A75599653C \
     ; do \
       gpg --batch --keyserver hkps://keys.openpgp.org --recv-keys "$key" || \
       gpg --batch --keyserver keyserver.ubuntu.com --recv-keys "$key" ; \
