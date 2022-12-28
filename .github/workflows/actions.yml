@@ -31,12 +31,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Extract branch name
+      - name: Set Branch Name
         shell: bash
-        run: echo "BRANCH_NAME=${{ steps.extract_branch.outputs.branch }}" >> $GITHUB_ENV
-        id: extract_branch
-      - name: Set BranchName
-        run: echo "BRANCH_NAME=${{ steps.extract_branch.outputs.branch }}" >> $GITHUB_ENV
+        run: |
+          echo "${GITHUB_REF#refs/heads/}"
+          echo "BRANCH_NAME=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
 
       - name: checkout
         uses: actions/checkout@v3
